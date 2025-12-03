@@ -11,7 +11,9 @@
   "dependencies": {
     "permissionless": "^0.2.0",
     "viem": "^2.21.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "ethers": "6.13.2",
+    "ethers5": "npm:ethers@^5.7.2"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
