@@ -5,14 +5,15 @@ import {
   http,
   encodeFunctionData,
   type Address,
+  Hex,
 } from "viem";
 import { fuse } from "viem/chains";
 import { createSmartAccountClient, encodeNonce } from "permissionless";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { toSimpleSmartAccount } from "permissionless/accounts";
 import { entryPoint06Address } from "viem/account-abstraction";
-import { toEtherspotSmartAccount } from "./etherspot_account";
-import { pimlicoBundlerTransport } from "./pimlico_bundler_transport";
+import { toEtherspotSmartAccount } from "./etherspot_account.js";
+import { pimlicoBundlerTransport } from "./pimlico_bundler_transport.js";
 import { ethers } from "ethers5";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`;
@@ -131,14 +132,14 @@ async function main() {
           callData: userOperation.callData,
           callGasLimit: toHex(userOperation.callGasLimit || 100000n),
           verificationGasLimit: toHex(
-            userOperation.verificationGasLimit || 1000000n
+            userOperation.verificationGasLimit || 1000000n,
           ),
           preVerificationGas: toHex(
-            userOperation.preVerificationGas || 100000n
+            userOperation.preVerificationGas || 100000n,
           ),
           maxFeePerGas: toHex(userOperation.maxFeePerGas || 1000000000n),
           maxPriorityFeePerGas: toHex(
-            userOperation.maxPriorityFeePerGas || 1000000000n
+            userOperation.maxPriorityFeePerGas || 1000000000n,
           ),
           paymasterAndData: "0x",
           signature:
@@ -304,88 +305,6 @@ async function main() {
   //   console.log(`✅ Transaction confirmed: ${receipt.receipt.transactionHash}`);
   // });
 
-  await runTest("batch-mint-nft-to-wallet", async () => {
-    console.log("🪙 Test: Batch Mint NFT to wallet");
-    console.log(`📤 Batch Minting NFT from: ${smartAccount.address}`);
-    const abi = [
-      {
-        type: "function",
-        name: "mint",
-        inputs: [
-          { internalType: "address", name: "to", type: "address" },
-          { internalType: "uint256", name: "amount", type: "uint256" },
-          { internalType: "string", name: "tokenURI", type: "string" },
-        ],
-        outputs: [],
-      },
-    ];
-    const data1 = encodeFunctionData({
-      abi,
-      functionName: "mint",
-      args: [USER_WALLET, 1, TOKEN_URI],
-    });
-
-    const data2 = encodeFunctionData({
-      abi,
-      functionName: "mint",
-      args: [USER_WALLET2, 1, TOKEN_URI],
-    });
-
-    const userOpHash = await smartAccountClient.sendUserOperation({
-      account: smartAccount,
-      calls: [
-        {
-          to: NFT_CONTRACT,
-          data: data1,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data1,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data1,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data1,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data1,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data2,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data2,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data2,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data2,
-        },
-        {
-          to: NFT_CONTRACT,
-          data: data2,
-        },
-      ],
-    });
-
-    console.log(`⏳ Waiting for user operation: ${userOpHash}`);
-
-    const receipt = await smartAccountClient.waitForUserOperationReceipt({
-      hash: userOpHash,
-    });
-
-    console.log(`✅ Transaction confirmed: ${receipt.receipt.transactionHash}`);
-  });
-
   // await runTest("parallel-mint-nft-to-wallet", async () => {
   //   console.log("🪙 Test: Parallel Mint NFT to wallet");
   //   console.log(`📤 Parallel Minting NFT from: ${smartAccount.address}`);
@@ -478,8 +397,162 @@ async function main() {
   //   });
   // });
 
+  // await runTest("batch-mint-nft-to-wallet", async () => {
+  //   console.log("🪙 Test: Batch Mint NFT to wallet");
+  //   console.log(`📤 Batch Minting NFT from: ${smartAccount.address}`);
+  //   const abi = [
+  //     {
+  //       type: "function",
+  //       name: "mint",
+  //       inputs: [
+  //         { internalType: "address", name: "to", type: "address" },
+  //         { internalType: "uint256", name: "amount", type: "uint256" },
+  //         { internalType: "string", name: "tokenURI", type: "string" },
+  //       ],
+  //       outputs: [],
+  //     },
+  //   ];
+  //   const data1 = encodeFunctionData({
+  //     abi,
+  //     functionName: "mint",
+  //     args: [USER_WALLET, 1, TOKEN_URI],
+  //   });
+
+  //   const data2 = encodeFunctionData({
+  //     abi,
+  //     functionName: "mint",
+  //     args: [USER_WALLET2, 1, TOKEN_URI],
+  //   });
+
+  //   const userOpHash = await smartAccountClient.sendUserOperation({
+  //     account: smartAccount,
+  //     calls: [
+  //       {
+  //         to: NFT_CONTRACT,
+  //         data: data1,
+  //       },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data1,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data1,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data1,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data1,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data2,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data2,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data2,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data2,
+  //       // },
+  //       // {
+  //       //   to: NFT_CONTRACT,
+  //       //   data: data2,
+  //       // },
+  //     ],
+  //   });
+
+  //   console.log(`⏳ Waiting for user operation: ${userOpHash}`);
+
+  //   const receipt = await smartAccountClient.waitForUserOperationReceipt({
+  //     hash: userOpHash,
+  //   });
+
+  //   console.log(`✅ Transaction confirmed: ${receipt.receipt.transactionHash}`);
+  // });
+
+  await runTest("mint-erc-1155", async () => {
+    console.log("🪙 Test: ERC-1155");
+    console.log(`📤 ERC-1155`);
+    // const data = encodeFunctionData({
+    //   abi: [
+    //     {
+    //       type: "function",
+    //       name: "mint",
+    //       inputs: [
+    //         { internalType: "address", name: "to", type: "address" },
+    //         { internalType: "uint256", name: "amount", type: "uint256" },
+    //         { internalType: "string", name: "tokenURI", type: "string" },
+    //       ],
+    //       outputs: [],
+    //     },
+    //   ],
+    //   functionName: "mint",
+    //   args: [
+    //     USER_WALLET,
+    //     1,
+    //     TOKEN_URI,
+    //   ],
+    // });
+
+    const calls = [
+      {
+        to: "0x47dFC51d6af1cB1555f5CA1C167270e738f6280f",
+        value: 0,
+        data: "0xd3fc98640000000000000000000000001f3712c9995afaf2d409759826971a60c3a11de500000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000005068747470733a2f2f697066732e696f2f697066732f6261666b726569663375757a6177676e32676b6f35626b3533736e6f377562646c7737636763727471797962776c7033706c327670737866356c6100000000000000000000000000000000",
+      },
+    ];
+
+    const viemCalls = calls.map((call) => {
+      let dataHex: Hex;
+      if (!call.data) {
+        dataHex = "0x" as Hex;
+      } else if (typeof call.data === "string" && call.data.startsWith("0x")) {
+        dataHex = call.data as Hex;
+      } else {
+        dataHex = `0x${Buffer.from(call.data).toString("hex")}` as Hex;
+      }
+
+      return {
+        to: call.to as Address,
+        value: 0,
+        data: dataHex,
+      };
+    });
+
+    // Use unique nonce key to avoid conflicts with pending operations
+    const nonce = encodeNonce({
+      key: BigInt(Date.now()),
+      sequence: 0n,
+    });
+
+    console.log(`📝 Using nonce key: ${Date.now()}`);
+    console.log(viemCalls);
+    const userOpHash = await smartAccountClient.sendUserOperation({
+      account: smartAccount,
+      calls: viemCalls,
+      nonce,
+    });
+
+    console.log(`⏳ Waiting for user operation: ${userOpHash}`);
+
+    const receipt = await smartAccountClient.waitForUserOperationReceipt({
+      hash: userOpHash,
+    });
+
+    console.log(`✅ Transaction confirmed: ${receipt.receipt.transactionHash}`);
+  });
+
   console.log(
-    "\n════════════════════════════════════════════════════════════\n"
+    "\n════════════════════════════════════════════════════════════\n",
   );
   console.log("📊 Test Summary:");
   console.log(`   ✅ Passed: ${results.filter((r) => r.passed).length}`);
@@ -492,7 +565,7 @@ async function main() {
     console.log(
       `${status} ${result.testName}: ${result.passed ? "1" : "0"} (${
         result.duration
-      }ms)`
+      }ms)`,
     );
   });
 
